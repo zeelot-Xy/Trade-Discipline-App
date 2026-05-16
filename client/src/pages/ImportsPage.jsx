@@ -61,6 +61,15 @@ export default function ImportsPage() {
     [mapping],
   );
   const mappedProfitLossHeader = useMemo(() => mapping.profitLoss?.trim() || "", [mapping]);
+  const previewHasMissingProfitLoss = useMemo(
+    () =>
+      Boolean(
+        preview?.normalizedRows?.some(
+          (row) => row.profitLoss === null || row.profitLoss === undefined,
+        ),
+      ),
+    [preview],
+  );
 
   const handleFileChange = async (event) => {
     const file = event.target.files?.[0];
@@ -343,7 +352,7 @@ export default function ImportsPage() {
               <p className="mt-2 text-sm text-slate-400">
                 Review normalized rows, duplicates, and missing values before saving them as imported trades.
               </p>
-              {!mappedProfitLossHeader ? (
+              {!mappedProfitLossHeader && previewHasMissingProfitLoss ? (
                 <p className="mt-2 text-sm text-amber-200">
                   Profit / Loss is not mapped yet, so preview rows without imported P/L will show
                   as <span className="font-semibold">Not mapped</span> instead of a misleading zero.
@@ -363,7 +372,7 @@ export default function ImportsPage() {
               onScroll={handlePreviewTableScroll}
               className="overflow-x-auto rounded-2xl border border-white/10"
             >
-              <table className="min-w-[760px] text-left text-sm">
+              <table className="min-w-[760px] text-left text-sm xl:min-w-0 xl:w-full">
               <thead className="text-slate-400">
                 <tr className="border-b border-white/10">
                   <th className="whitespace-nowrap px-3 py-3">Row</th>
@@ -411,7 +420,7 @@ export default function ImportsPage() {
               </table>
             </div>
             {showScrollHint ? (
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center">
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center xl:hidden">
                 <div className="h-full w-16 bg-gradient-to-l from-slate-950/95 via-slate-950/70 to-transparent" />
                 <div className="absolute right-3 top-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-slate-950/85 px-3 py-1.5 text-[11px] font-medium text-slate-200 shadow-lg backdrop-blur">
                   <MoveHorizontal className="h-3.5 w-3.5 text-emerald-300" />

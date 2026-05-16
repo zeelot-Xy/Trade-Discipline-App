@@ -132,6 +132,184 @@ const parseHtmlTables = (html = "") => {
     .filter((rows) => rows.length > 1);
 };
 
+const isMetaTraderExecutionType = (value = "") => {
+  const normalized = normalizeHeader(value);
+  return normalized === "buy" || normalized === "sell";
+};
+
+const detectMetaTraderHeader = (rows) => {
+  for (let index = 0; index < rows.length; index += 1) {
+    const normalizedRow = rows[index].map(normalizeHeader);
+    const hasTicket = normalizedRow.some((cell) => cell === "ticket");
+    const hasType = normalizedRow.some((cell) => cell === "type");
+    const hasSymbol = normalizedRow.some((cell) => cell === "item" || cell === "symbol");
+    const hasProfit = normalizedRow.some((cell) => cell === "profit" || cell === "p/l");
+
+    if (hasTicket && hasType && hasSymbol && hasProfit) {
+      const priceIndexes = normalizedRow.reduce((indexes, cell, cellIndex) => {
+        if (cell === "price" || cell === "open price" || cell === "close price") {
+          indexes.push(cellIndex);
+        }
+        return indexes;
+      }, []);
+
+      const findIndex = (predicate) => normalizedRow.findIndex(predicate);
+      const openPriceIndex = findIndex((cell) => cell === "open price");
+      const closePriceIndex = findIndex((cell) => cell === "close price");
+
+      return {
+        headerRowIndex: index,
+        columns: {
+          sourceTradeId: findIndex((cell) => cell === "ticket" || cell === "order" || cell === "deal"),
+          tradeDate: findIndex((cell) => cell === "open time" || cell === "time"),
+          direction: findIndex((cell) => cell === "type"),
+          symbol: findIndex((cell) => cell === "item" || cell === "symbol" || cell === "instrument"),
+          entryPrice:
+            openPriceIndex !== -1
+              ? openPriceIndex
+              : priceIndexes.length
+                ? priceIndexes[0]
+                : -1,
+          stopLoss: findIndex((cell) => cell === "s / l" || cell === "s/l" || cell === "sl"),
+          takeProfit: findIndex((cell) => cell === "t / p" || cell === "t/p" || cell === "tp"),
+          exitDate: findIndex((cell) => cell === "close time"),
+          exitPrice:
+            closePriceIndex !== -1
+              ? closePriceIndex
+              : priceIndexes.length > 1
+                ? priceIndexes[1]
+                : -1,
+          profitLoss: findIndex((cell) => cell === "profit" || cell === "p/l"),
+          notes: findIndex((cell) => cell === "comment"),
+        },
+      };
+    }
+  }
+
+  return null;
+};
+
+const extractMetaTraderHtmlRows = (tables, importSource) => {
+  const detectedTables = tables
+    .map((rows) => {
+      const header = detectMetaTraderHeader(rows);
+      if (!header) {
+        return null;
+      }
+
+      const tradeRows = rows
+        .slice(header.headerRowIndex + 1)
+        .map((cells, rowOffset) => ({
+          cells,
+          rowNumber: header.headerRowIndex + rowOffset + 2,
+        }))
+        .filter((row) => row.cells.length >= 10)
+        .filter((row) =>
+          isMetaTraderExecutionType(
+            row.cells[header.columns.direction] ?? row.cells[2] ?? "",
+          ),
+        );
+
+      return {
+        header,
+        tradeRows,
+      };
+    })
+    .filter(Boolean)
+    .sort((left, right) => right.tradeRows.length - left.tradeRows.length);
+
+  const bestDetectedTable = detectedTables[0];
+
+  if (bestDetectedTable?.tradeRows?.length) {
+    return bestDetectedTable.tradeRows.map(({ cells, rowNumber }) => {
+      const columns = bestDetectedTable.header.columns;
+      const symbol = String(cells[columns.symbol] ?? "").trim();
+      const profitLoss = parseNumberValue(cells[columns.profitLoss] ?? "");
+      const parsedDate = parseDateValue(cells[columns.tradeDate] ?? "");
+      const exitPrice = parseNumberValue(cells[columns.exitPrice] ?? "");
+      const result = parseResult("", profitLoss);
+
+      return {
+        rowNumber,
+        entrySource: "MT_STATEMENT",
+        importSource,
+        sourceTradeId: String(cells[columns.sourceTradeId] ?? "").trim() || null,
+        externalReference: String(cells[columns.notes] ?? "").trim() || null,
+        symbol: symbol ? symbol.toUpperCase() : null,
+        direction: parseDirection(cells[columns.direction] ?? ""),
+        entryPrice: parseNumberValue(cells[columns.entryPrice] ?? ""),
+        exitPrice,
+        stopLoss: parseNumberValue(cells[columns.stopLoss] ?? ""),
+        takeProfit: parseNumberValue(cells[columns.takeProfit] ?? ""),
+        profitLoss,
+        status: buildImportedTradeStatus({
+          status: "CLOSED",
+          result,
+          exitPrice,
+          profitLoss,
+        }),
+        result,
+        tradeDate: parsedDate ? parsedDate.toISOString() : null,
+        notes: String(cells[columns.notes] ?? "").trim() || null,
+        issues: [
+          ...(symbol ? [] : ["Missing symbol."]),
+          ...(parsedDate ? [] : ["Missing or invalid trade date."]),
+        ],
+      };
+    });
+  }
+
+  const fallbackTable = tables
+    .map((rows) => ({
+      rows,
+      tradeRows: rows
+        .map((cells, rowIndex) => ({ cells, rowNumber: rowIndex + 1 }))
+        .filter((row) => row.cells.length >= 14)
+        .filter((row) => isMetaTraderExecutionType(row.cells[2] ?? "")),
+    }))
+    .sort((left, right) => right.tradeRows.length - left.tradeRows.length)[0];
+
+  if (!fallbackTable?.tradeRows?.length) {
+    return [];
+  }
+
+  return fallbackTable.tradeRows.map(({ cells, rowNumber }) => {
+    const symbol = String(cells[4] ?? "").trim();
+    const profitLoss = parseNumberValue(cells[13] ?? "");
+    const parsedDate = parseDateValue(cells[1] ?? "");
+    const exitPrice = parseNumberValue(cells[9] ?? "");
+    const result = parseResult("", profitLoss);
+
+    return {
+      rowNumber,
+      entrySource: "MT_STATEMENT",
+      importSource,
+      sourceTradeId: String(cells[0] ?? "").trim() || null,
+      externalReference: String(cells[14] ?? "").trim() || null,
+      symbol: symbol ? symbol.toUpperCase() : null,
+      direction: parseDirection(cells[2] ?? ""),
+      entryPrice: parseNumberValue(cells[5] ?? ""),
+      exitPrice,
+      stopLoss: parseNumberValue(cells[6] ?? ""),
+      takeProfit: parseNumberValue(cells[7] ?? ""),
+      profitLoss,
+      status: buildImportedTradeStatus({
+        status: "CLOSED",
+        result,
+        exitPrice,
+        profitLoss,
+      }),
+      result,
+      tradeDate: parsedDate ? parsedDate.toISOString() : null,
+      notes: String(cells[14] ?? "").trim() || null,
+      issues: [
+        ...(symbol ? [] : ["Missing symbol."]),
+        ...(parsedDate ? [] : ["Missing or invalid trade date."]),
+      ],
+    };
+  });
+};
+
 const scoreTableForTrades = (headers) => {
   const normalized = headers.map(normalizeHeader);
   const keywords = ["ticket", "symbol", "item", "type", "time", "profit", "price"];
@@ -488,37 +666,52 @@ export const previewMtStatementImport = async ({ userId, fileName, fileContent }
   const importSource = detectMtImportSource(fileName, fileContent);
   const isHtml = /<table[\s\S]*?>/i.test(fileContent) || /\.html?$/i.test(fileName || "");
 
-  const parsed = isHtml
-    ? convertRowsToObjects(pickTradeTable(parseHtmlTables(fileContent)))
-    : convertRowsToObjects(parseCsvText(fileContent));
+  let parsed = null;
+  let mapping = {};
+  let normalizedRows = [];
 
-  if (!parsed.rows.length) {
-    throw new AppError("No trade rows could be detected in this MT4/MT5 statement.", 400);
-  }
+  if (isHtml) {
+    normalizedRows = extractMetaTraderHtmlRows(parseHtmlTables(fileContent), importSource);
+    if (!normalizedRows.length) {
+      throw new AppError("No trade rows could be detected in this MT4/MT5 statement.", 400);
+    }
+    parsed = {
+      headers: [],
+      rows: normalizedRows.map((row) => ({
+        rowNumber: row.rowNumber,
+        values: {},
+      })),
+    };
+  } else {
+    parsed = convertRowsToObjects(parseCsvText(fileContent));
 
-  if (parsed.rows.length > IMPORT_BATCH_LIMIT) {
-    throw new AppError(`Please import ${IMPORT_BATCH_LIMIT} rows or fewer at a time.`, 400);
-  }
+    if (!parsed.rows.length) {
+      throw new AppError("No trade rows could be detected in this MT4/MT5 statement.", 400);
+    }
 
-  const mapping = resolveDefaultMapping(parsed.headers, MT_STATEMENT_DEFAULT_MAPPING);
-  const normalizedRows = await markDuplicates(
-    userId,
-    buildMappedRows({
+    mapping = resolveDefaultMapping(parsed.headers, MT_STATEMENT_DEFAULT_MAPPING);
+    normalizedRows = buildMappedRows({
       rows: parsed.rows,
       mapping,
       entrySource: "MT_STATEMENT",
       importSource,
-    }),
-  );
+    });
+  }
+
+  if (normalizedRows.length > IMPORT_BATCH_LIMIT) {
+    throw new AppError(`Please import ${IMPORT_BATCH_LIMIT} rows or fewer at a time.`, 400);
+  }
+
+  const duplicateMarkedRows = await markDuplicates(userId, normalizedRows);
 
   return {
     sourceType: importSource,
     fileName,
-    detectedColumns: parsed.headers,
+    detectedColumns: parsed.headers || [],
     mappedFields: mapping,
-    normalizedRows,
+    normalizedRows: duplicateMarkedRows,
     requiresMapping: false,
-    summary: buildPreviewSummary(normalizedRows),
+    summary: buildPreviewSummary(duplicateMarkedRows),
   };
 };
 
