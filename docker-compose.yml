@@ -1,0 +1,53 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: perfect-trade-postgres
+    environment:
+      POSTGRES_DB: perfect_trade
+      POSTGRES_USER: perfect_trade_user
+      POSTGRES_PASSWORD: perfect_trade_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - perfect_trade_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U perfect_trade_user -d perfect_trade"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+
+  server:
+    build:
+      context: ./server
+    container_name: perfect-trade-server
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://perfect_trade_user:perfect_trade_password@postgres:5432/perfect_trade
+      JWT_SECRET: change_this_secret
+      JWT_EXPIRES_IN: 7d
+      CLIENT_URL: http://localhost:5173
+      PORT: 5000
+      NODE_ENV: production
+      PAYSTACK_SECRET_KEY: ""
+      PAYSTACK_PRO_PLAN_CODE: ""
+    ports:
+      - "5000:5000"
+    volumes:
+      - perfect_trade_uploads:/app/uploads
+
+  client:
+    build:
+      context: ./client
+      args:
+        VITE_API_URL: http://localhost:5000/api
+    container_name: perfect-trade-client
+    depends_on:
+      - server
+    ports:
+      - "5173:80"
+
+volumes:
+  perfect_trade_postgres_data:
+  perfect_trade_uploads:

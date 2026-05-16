@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TradeDirection {
+  BUY
+  SELL
+}
+
+enum TradeStatus {
+  OPEN
+  CLOSED
+}
+
+enum TradeResult {
+  WIN
+  LOSS
+  BREAKEVEN
+}
+
+enum PlanType {
+  FREE
+  PRO
+}
+
+enum SubscriptionStatus {
+  INACTIVE
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  UNPAID
+}
+
+enum TradeEntrySource {
+  MANUAL
+  CSV_IMPORT
+  MT_STATEMENT
+  EXCHANGE_IMPORT
+}
+
+enum TradeImportSource {
+  GENERIC_CSV
+  MT4
+  MT5
+  BINANCE
+  BYBIT
+}
+
+model User {
+  id                     String    @id @default(cuid())
+  fullName               String
+  email                  String    @unique
+  passwordHash           String
+  resetPasswordTokenHash String?
+  resetPasswordExpiresAt DateTime?
+  planType               PlanType  @default(FREE)
+  paystackCustomerCode   String?   @unique
+  paystackSubscriptionCode String? @unique
+  stripeCustomerId       String?   @unique
+  stripeSubscriptionId   String?   @unique
+  subscriptionStatus     SubscriptionStatus @default(INACTIVE)
+  currentPeriodEnd       DateTime?
+  trades                 Trade[]
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+}
+
+model Trade {
+  id                String         @id @default(cuid())
+  userId            String
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entrySource       TradeEntrySource @default(MANUAL)
+  importSource      TradeImportSource?
+  importBatchId     String?
+  sourceTradeId     String?
+  externalReference String?
+  strategyKey       String?
+  tradingViewUrl    String?
+  symbol            String?
+  direction         TradeDirection?
+  entryPrice        Decimal?       @db.Decimal(18, 4)
+  exitPrice         Decimal?       @db.Decimal(18, 4)
+  stopLoss          Decimal?       @db.Decimal(18, 4)
+  takeProfit        Decimal?       @db.Decimal(18, 4)
+  riskAmount        Decimal?       @db.Decimal(18, 2)
+  rewardAmount      Decimal?       @db.Decimal(18, 2)
+  profitLoss        Decimal?       @db.Decimal(18, 2)
+  status            TradeStatus    @default(OPEN)
+  result            TradeResult?
+  confluenceScore   Int?
+  disciplineScore   Int?
+  disciplineSummary String?
+  setupQuality      String?
+  checklistSnapshot Json?
+  mistakeTags       String[]       @default([])
+  beforeTradeScreenshotUrl String?
+  afterTradeScreenshotUrl  String?
+  notes             String?
+  emotionBefore     String?
+  emotionAfter      String?
+  tradeDate         DateTime       @default(now())
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+}
