@@ -4,6 +4,7 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import PublicOnlyRoute from "./components/PublicOnlyRoute.jsx";
 import AppLayout from "./layouts/AppLayout.jsx";
 import AuthLayout from "./layouts/AuthLayout.jsx";
+import LandingPage from "./pages/LandingPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
@@ -22,6 +23,8 @@ import ImportsPage from "./pages/ImportsPage.jsx";
 function App() {
   return (
     <Routes>
+      <Route path="/" element={<LandingPage />} />
+
       <Route
         element={
           <PublicOnlyRoute>
@@ -57,7 +60,7 @@ function App() {
         <Route path="/trade/:id" element={<TradeDetailPage />} />
       </Route>
 
-      <Route path="*" element={<Navigate to="/checklist" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
