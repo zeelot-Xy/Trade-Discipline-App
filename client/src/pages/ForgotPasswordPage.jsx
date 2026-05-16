@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 
 import authService from "../services/authService.js";
+import AuthTextLink from "../components/AuthTextLink.jsx";
 import ErrorMessage from "../components/ErrorMessage.jsx";
 
 const inputClassName =
@@ -80,9 +80,7 @@ export default function ForgotPasswordPage() {
       ) : null}
 
       <p className="mt-6 text-sm text-slate-400">
-        <Link to="/login" className="text-emerald-300 transition hover:text-emerald-200">
-          Back to login
-        </Link>
+        <AuthTextLink to="/login">Back to login</AuthTextLink>
       </p>
     </div>
   );

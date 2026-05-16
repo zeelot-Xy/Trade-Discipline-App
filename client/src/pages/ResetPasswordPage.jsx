@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import authService from "../services/authService.js";
+import AuthTextLink from "../components/AuthTextLink.jsx";
 import ErrorMessage from "../components/ErrorMessage.jsx";
 
 const inputClassName =
@@ -91,9 +92,7 @@ export default function ResetPasswordPage() {
           </form>
 
           <p className="mt-6 text-sm text-slate-400">
-            <Link to="/login" className="text-emerald-300 transition hover:text-emerald-200">
-              Back to login
-            </Link>
+            <AuthTextLink to="/login">Back to login</AuthTextLink>
           </p>
         </div>
       </div>

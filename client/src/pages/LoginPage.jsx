@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import authService from "../services/authService.js";
 import { useAuth } from "../context/AuthContext.jsx";
+import AuthTextLink from "../components/AuthTextLink.jsx";
 import ErrorMessage from "../components/ErrorMessage.jsx";
 
 const inputClassName =
@@ -68,12 +69,8 @@ export default function LoginPage() {
       </form>
 
       <div className="mt-6 flex items-center justify-between gap-4 text-sm">
-        <Link to="/forgot-password" className="text-slate-400 transition hover:text-emerald-300">
-          Forgot password?
-        </Link>
-        <Link to="/register" className="text-emerald-300 transition hover:text-emerald-200">
-          Create account
-        </Link>
+        <AuthTextLink to="/forgot-password">Forgot password?</AuthTextLink>
+        <AuthTextLink to="/register">Create account</AuthTextLink>
       </div>
     </div>
   );

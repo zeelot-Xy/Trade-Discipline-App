@@ -125,7 +125,7 @@ export default function TradingCalendar({ calendarData }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-7 gap-2 text-center text-xs uppercase tracking-[0.18em] text-slate-500">
+        <div className="grid grid-cols-7 gap-1.5 text-center text-[10px] uppercase tracking-[0.18em] text-slate-500 sm:gap-2 sm:text-xs">
           {weekDays.map((day) => (
             <div key={day} className="py-2">
               {day}
@@ -133,7 +133,7 @@ export default function TradingCalendar({ calendarData }) {
           ))}
         </div>
 
-        <div className="grid grid-cols-7 gap-2">
+        <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
           {days.map((day) => {
             const dateKey = day.toISOString().split("T")[0];
             const entry = entries[dateKey];
@@ -146,7 +146,7 @@ export default function TradingCalendar({ calendarData }) {
                 type="button"
                 disabled={!entry}
                 onClick={() => entry && setSelectedDay(entry)}
-                className={`min-h-24 rounded-2xl border p-2 text-left transition ${
+                className={`min-h-[4.75rem] rounded-xl border px-1.5 py-1.5 text-left transition sm:min-h-24 sm:rounded-2xl sm:p-2 ${
                   isToday
                     ? "border-emerald-400/40 bg-emerald-500/10"
                     : "border-white/10 bg-slate-900/45"
@@ -154,18 +154,31 @@ export default function TradingCalendar({ calendarData }) {
                   entry ? "cursor-pointer hover:border-emerald-400/30" : "cursor-default"
                 }`}
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-white">{day.getDate()}</span>
-                  {entry ? (
-                    <span className={`h-2.5 w-2.5 rounded-full ${getMarkerTone(entry)}`} />
-                  ) : null}
-                </div>
-                {entry ? (
-                  <div className="mt-3 space-y-1 text-[11px] text-slate-300">
-                    <p>{entry.totalTrades} trade(s)</p>
-                    <p>{formatCurrency(entry.netProfitLoss)}</p>
+                <div className="flex h-full flex-col justify-between">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-white sm:text-sm">{day.getDate()}</span>
+                    {entry ? (
+                      <span className={`h-2.5 w-2.5 rounded-full ${getMarkerTone(entry)}`} />
+                    ) : null}
                   </div>
-                ) : null}
+
+                  {entry ? (
+                    <>
+                      <div className="mt-2 flex items-center justify-between text-[10px] text-slate-400 sm:hidden">
+                        <span className="rounded-full border border-white/10 bg-white/[0.05] px-1.5 py-0.5">
+                          {entry.totalTrades}
+                        </span>
+                        <span className={`h-1.5 w-6 rounded-full ${getMarkerTone(entry)}`} />
+                      </div>
+                      <div className="mt-3 hidden space-y-1 text-[11px] text-slate-300 sm:block">
+                        <p>{entry.totalTrades} trade(s)</p>
+                        <p>{formatCurrency(entry.netProfitLoss)}</p>
+                      </div>
+                    </>
+                  ) : (
+                    <span className="block h-4 sm:hidden" />
+                  )}
+                </div>
               </button>
             );
           })}

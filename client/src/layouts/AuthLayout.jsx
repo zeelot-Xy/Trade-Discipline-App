@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
-import { BarChart3, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowLeft, BarChart3, ShieldCheck, Sparkles } from "lucide-react";
 import TradeCadetLogo from "../components/TradeCadetLogo.jsx";
+import AuthTextLink from "../components/AuthTextLink.jsx";
 
 export default function AuthLayout() {
   return (
@@ -59,6 +60,12 @@ export default function AuthLayout() {
         </div>
 
         <div className="mx-auto w-full max-w-md">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <AuthTextLink to="/" className="inline-flex items-center gap-2 text-sm">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Home
+            </AuthTextLink>
+          </div>
           <Outlet />
         </div>
       </div>

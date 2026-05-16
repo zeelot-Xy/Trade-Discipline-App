@@ -117,6 +117,7 @@ export default function ImportsPage() {
             });
 
       setPreview(response);
+      setShowScrollHint(true);
       if (response.suggestedMapping) {
         setMapping(response.suggestedMapping);
       }
@@ -142,6 +143,7 @@ export default function ImportsPage() {
         mapping,
       });
       setPreview(response);
+      setShowScrollHint(true);
     } catch (requestError) {
       setError(requestError.message);
     } finally {
@@ -192,6 +194,40 @@ export default function ImportsPage() {
     setShowScrollHint(remainingScroll > 12);
   };
 
+  const previewRows = preview?.normalizedRows?.slice(0, 50) || [];
+
+  const renderPreviewRow = (row) => (
+    <tr key={`preview-row-${row.rowNumber}`} className="border-b border-white/[0.06] text-slate-200">
+      <td className="whitespace-nowrap px-3 py-3 align-top">{row.rowNumber}</td>
+      <td className="whitespace-nowrap px-3 py-3 align-top">{row.symbol || "Missing"}</td>
+      <td className="whitespace-nowrap px-3 py-3 align-top">{row.direction || "--"}</td>
+      <td className="px-3 py-3 align-top">
+        <span className="inline-block whitespace-nowrap text-sm">
+          {row.tradeDate ? formatImportPreviewDate(row.tradeDate) : "Missing"}
+        </span>
+      </td>
+      <td className="whitespace-nowrap px-3 py-3 align-top">
+        {row.profitLoss !== null && row.profitLoss !== undefined ? (
+          formatCurrency(row.profitLoss)
+        ) : (
+          <span className="text-amber-300">Not mapped</span>
+        )}
+      </td>
+      <td className="whitespace-nowrap px-3 py-3 align-top">{row.status}</td>
+      <td className="px-3 py-3 align-top">
+        {row.duplicateOf ? (
+          <span className="text-amber-300">Duplicate of existing trade</span>
+        ) : row.issues?.length ? (
+          <span className="text-red-300">{row.issues.join(" ")}</span>
+        ) : row.profitLoss === null || row.profitLoss === undefined ? (
+          <span className="text-amber-300">Ready, but P/L missing</span>
+        ) : (
+          <span className="text-emerald-300">Ready</span>
+        )}
+      </td>
+    </tr>
+  );
+
   return (
     <div className="space-y-6">
       <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 shadow-2xl backdrop-blur-2xl">
@@ -227,8 +263,10 @@ export default function ImportsPage() {
                   type="button"
                   onClick={() => {
                     setSourceType(option.key);
+                    setFileMeta(null);
                     setPreview(null);
                     setMapping({});
+                    setShowScrollHint(true);
                     setError("");
                     setMessage("");
                   }}
@@ -352,7 +390,7 @@ export default function ImportsPage() {
               <p className="mt-2 text-sm text-slate-400">
                 Review normalized rows, duplicates, and missing values before saving them as imported trades.
               </p>
-              {!mappedProfitLossHeader && previewHasMissingProfitLoss ? (
+              {sourceType === "csv" && !mappedProfitLossHeader && previewHasMissingProfitLoss ? (
                 <p className="mt-2 text-sm text-amber-200">
                   Profit / Loss is not mapped yet, so preview rows without imported P/L will show
                   as <span className="font-semibold">Not mapped</span> instead of a misleading zero.
@@ -366,61 +404,29 @@ export default function ImportsPage() {
             </div>
           </div>
 
-          <div className="relative mt-5">
+          <div className="relative mt-5 xl:hidden">
             <div
               ref={previewTableRef}
               onScroll={handlePreviewTableScroll}
               className="overflow-x-auto rounded-2xl border border-white/10"
             >
-              <table className="min-w-[760px] text-left text-sm xl:min-w-0 xl:w-full">
-              <thead className="text-slate-400">
-                <tr className="border-b border-white/10">
-                  <th className="whitespace-nowrap px-3 py-3">Row</th>
-                  <th className="whitespace-nowrap px-3 py-3">Symbol</th>
-                  <th className="whitespace-nowrap px-3 py-3">Direction</th>
-                  <th className="whitespace-nowrap px-3 py-3">Date</th>
-                  <th className="whitespace-nowrap px-3 py-3">P/L</th>
-                  <th className="whitespace-nowrap px-3 py-3">Status</th>
-                  <th className="whitespace-nowrap px-3 py-3">Issues</th>
-                </tr>
-              </thead>
-              <tbody>
-                {preview.normalizedRows.slice(0, 50).map((row) => (
-                  <tr key={`preview-row-${row.rowNumber}`} className="border-b border-white/[0.06] text-slate-200">
-                    <td className="whitespace-nowrap px-3 py-3 align-top">{row.rowNumber}</td>
-                    <td className="whitespace-nowrap px-3 py-3 align-top">{row.symbol || "Missing"}</td>
-                    <td className="whitespace-nowrap px-3 py-3 align-top">{row.direction || "--"}</td>
-                    <td className="px-3 py-3 align-top">
-                      <span className="inline-block whitespace-nowrap text-sm">
-                        {row.tradeDate ? formatImportPreviewDate(row.tradeDate) : "Missing"}
-                      </span>
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-3 align-top">
-                      {row.profitLoss !== null && row.profitLoss !== undefined ? (
-                        formatCurrency(row.profitLoss)
-                      ) : (
-                        <span className="text-amber-300">Not mapped</span>
-                      )}
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-3 align-top">{row.status}</td>
-                    <td className="px-3 py-3 align-top">
-                      {row.duplicateOf ? (
-                        <span className="text-amber-300">Duplicate of existing trade</span>
-                      ) : row.issues?.length ? (
-                        <span className="text-red-300">{row.issues.join(" ")}</span>
-                      ) : row.profitLoss === null || row.profitLoss === undefined ? (
-                        <span className="text-amber-300">Ready, but P/L missing</span>
-                      ) : (
-                        <span className="text-emerald-300">Ready</span>
-                      )}
-                    </td>
+              <table className="min-w-[760px] text-left text-sm">
+                <thead className="text-slate-400">
+                  <tr className="border-b border-white/10">
+                    <th className="whitespace-nowrap px-3 py-3">Row</th>
+                    <th className="whitespace-nowrap px-3 py-3">Symbol</th>
+                    <th className="whitespace-nowrap px-3 py-3">Direction</th>
+                    <th className="whitespace-nowrap px-3 py-3">Date</th>
+                    <th className="whitespace-nowrap px-3 py-3">P/L</th>
+                    <th className="whitespace-nowrap px-3 py-3">Status</th>
+                    <th className="whitespace-nowrap px-3 py-3">Issues</th>
                   </tr>
-                ))}
-              </tbody>
+                </thead>
+                <tbody>{previewRows.map(renderPreviewRow)}</tbody>
               </table>
             </div>
             {showScrollHint ? (
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center xl:hidden">
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center">
                 <div className="h-full w-16 bg-gradient-to-l from-slate-950/95 via-slate-950/70 to-transparent" />
                 <div className="absolute right-3 top-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-slate-950/85 px-3 py-1.5 text-[11px] font-medium text-slate-200 shadow-lg backdrop-blur">
                   <MoveHorizontal className="h-3.5 w-3.5 text-emerald-300" />
@@ -428,6 +434,23 @@ export default function ImportsPage() {
                 </div>
               </div>
             ) : null}
+          </div>
+
+          <div className="mt-5 hidden overflow-hidden rounded-2xl border border-white/10 xl:block">
+            <table className="w-full text-left text-sm">
+              <thead className="text-slate-400">
+                <tr className="border-b border-white/10">
+                  <th className="whitespace-nowrap px-4 py-3">Row</th>
+                  <th className="whitespace-nowrap px-4 py-3">Symbol</th>
+                  <th className="whitespace-nowrap px-4 py-3">Direction</th>
+                  <th className="whitespace-nowrap px-4 py-3">Date</th>
+                  <th className="whitespace-nowrap px-4 py-3">P/L</th>
+                  <th className="whitespace-nowrap px-4 py-3">Status</th>
+                  <th className="px-4 py-3">Issues</th>
+                </tr>
+              </thead>
+              <tbody>{previewRows.map(renderPreviewRow)}</tbody>
+            </table>
           </div>
 
           {preview.normalizedRows.length > 50 ? (

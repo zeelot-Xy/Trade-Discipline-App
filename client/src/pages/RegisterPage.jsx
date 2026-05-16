@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import authService from "../services/authService.js";
 import { useAuth } from "../context/AuthContext.jsx";
+import AuthTextLink from "../components/AuthTextLink.jsx";
 import ErrorMessage from "../components/ErrorMessage.jsx";
 
 const inputClassName =
@@ -72,9 +73,7 @@ export default function RegisterPage() {
 
       <p className="mt-6 text-sm text-slate-400">
         Already have an account?{" "}
-        <Link to="/login" className="text-emerald-300 transition hover:text-emerald-200">
-          Login
-        </Link>
+        <AuthTextLink to="/login">Login</AuthTextLink>
       </p>
     </div>
   );
