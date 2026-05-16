@@ -7,7 +7,7 @@ import ErrorMessage from "../components/ErrorMessage.jsx";
 import ScreenshotUploader from "../components/ScreenshotUploader.jsx";
 import { formatCurrency, formatDate, formatNumber } from "../utils/formatters.js";
 import { getStrategyLabel, strategyOptions } from "../data/checklistRules.js";
-import { emotionOptions, mistakeTagOptions } from "../data/tradingOptions.js";
+import { emotionAfterOptions, mistakeTagOptions } from "../data/tradingOptions.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { getServerAssetUrl } from "../utils/serverAssets.js";
 import { getTradeSourceLabel, isImportedTrade } from "../data/tradeSources.js";
@@ -49,9 +49,10 @@ export default function TradeDetailPage() {
     removeBeforeTradeScreenshot: false,
     removeAfterTradeScreenshot: false,
   });
-  const emotionAfterOptions = form.emotionAfter && !emotionOptions.includes(form.emotionAfter)
-    ? [form.emotionAfter, ...emotionOptions]
-    : emotionOptions;
+  const availableEmotionAfterOptions =
+    form.emotionAfter && !emotionAfterOptions.includes(form.emotionAfter)
+      ? [form.emotionAfter, ...emotionAfterOptions]
+      : emotionAfterOptions;
 
   useEffect(() => {
     let isMounted = true;
@@ -116,8 +117,8 @@ export default function TradeDetailPage() {
         result: form.result || null,
         profitLoss: form.profitLoss === "" ? undefined : Number(form.profitLoss),
         mistakeTags: form.mistakeTags,
-        beforeTradeScreenshot: screenshotDrafts.beforeTradeScreenshot,
-        afterTradeScreenshot: screenshotDrafts.afterTradeScreenshot,
+        beforeTradeScreenshot: screenshotDrafts.beforeTradeScreenshot || undefined,
+        afterTradeScreenshot: screenshotDrafts.afterTradeScreenshot || undefined,
         removeBeforeTradeScreenshot: screenshotDrafts.removeBeforeTradeScreenshot,
         removeAfterTradeScreenshot: screenshotDrafts.removeAfterTradeScreenshot,
       });
@@ -476,7 +477,7 @@ export default function TradeDetailPage() {
               onChange={(event) => setForm((current) => ({ ...current, emotionAfter: event.target.value }))}
             >
               <option value="">Emotion After Trade</option>
-              {emotionAfterOptions.map((emotion) => (
+              {availableEmotionAfterOptions.map((emotion) => (
                 <option key={emotion} value={emotion}>
                   {emotion}
                 </option>

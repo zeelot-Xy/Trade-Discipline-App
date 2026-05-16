@@ -47,6 +47,8 @@ const getInitials = (fullName = "") =>
     .map((part) => part[0]?.toUpperCase() || "")
     .join("");
 
+const getFirstName = (fullName = "") => fullName.trim().split(/\s+/)[0] || "";
+
 const desktopLinkClassName = ({ isActive }) =>
   `inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition ${
     isActive
@@ -74,6 +76,7 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const initials = getInitials(user?.fullName);
+  const firstName = getFirstName(user?.fullName);
   const reviewsActive = location.pathname.startsWith("/reviews/");
 
   useEffect(() => {
@@ -174,7 +177,7 @@ export default function Navbar() {
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-cyan-400 text-xs font-bold text-slate-950">
                   {initials || "TC"}
                 </span>
-                <span>{user?.fullName}</span>
+                <span>{firstName || user?.fullName}</span>
                 {user?.planType === "PRO" ? (
                   <span className="rounded-full bg-emerald-400/20 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-200">
                     Pro

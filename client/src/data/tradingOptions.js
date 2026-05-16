@@ -1,8 +1,9 @@
-export const emotionOptions = [
+export const emotionBeforeOptions = [
   "Calm",
   "Focused",
   "Confident",
   "Patient",
+  "Neutral",
   "Hesitant",
   "Anxious",
   "Fearful",
@@ -10,8 +11,22 @@ export const emotionOptions = [
   "Frustrated",
   "Revenge-driven",
   "Overconfident",
-  "Neutral",
 ];
+
+export const emotionAfterOptions = [
+  "Calm",
+  "Satisfied",
+  "Proud",
+  "Relieved",
+  "Focused",
+  "Neutral",
+  "Disappointed",
+  "Frustrated",
+  "Anxious",
+  "Overconfident",
+];
+
+export const emotionOptions = [...new Set([...emotionBeforeOptions, ...emotionAfterOptions])];
 
 export const mistakeTagOptions = [
   "No notable mistake",

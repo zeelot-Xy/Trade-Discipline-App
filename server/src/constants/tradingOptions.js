@@ -1,10 +1,11 @@
 export const STRATEGY_KEYS = ["trend", "swing", "scalping"];
 
-export const EMOTION_OPTIONS = [
+export const EMOTION_BEFORE_OPTIONS = [
   "Calm",
   "Focused",
   "Confident",
   "Patient",
+  "Neutral",
   "Hesitant",
   "Anxious",
   "Fearful",
@@ -12,7 +13,23 @@ export const EMOTION_OPTIONS = [
   "Frustrated",
   "Revenge-driven",
   "Overconfident",
+];
+
+export const EMOTION_AFTER_OPTIONS = [
+  "Calm",
+  "Satisfied",
+  "Proud",
+  "Relieved",
+  "Focused",
   "Neutral",
+  "Disappointed",
+  "Frustrated",
+  "Anxious",
+  "Overconfident",
+];
+
+export const EMOTION_OPTIONS = [
+  ...new Set([...EMOTION_BEFORE_OPTIONS, ...EMOTION_AFTER_OPTIONS]),
 ];
 
 export const HIGH_RISK_EMOTIONS = new Set([

@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { ImagePlus, Lock, Trash2 } from "lucide-react";
 
 import { getServerAssetUrl } from "../utils/serverAssets.js";
@@ -11,7 +12,9 @@ export default function ScreenshotUploader({
   onRemove,
   disabled = false,
 }) {
+  const inputId = useId();
   const resolvedPreviewUrl = getServerAssetUrl(previewUrl);
+  const canUpload = isPro && !disabled;
 
   return (
     <div className="rounded-2xl border border-white/10 bg-slate-900/50 p-4">
@@ -28,37 +31,50 @@ export default function ScreenshotUploader({
         ) : null}
       </div>
 
+      <input
+        id={inputId}
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        className="hidden"
+        disabled={!canUpload}
+        onChange={onFileChange}
+      />
+
       {resolvedPreviewUrl ? (
-        <div className="mt-4 overflow-hidden rounded-2xl border border-white/10 bg-slate-950/60">
+        <label
+          htmlFor={canUpload ? inputId : undefined}
+          className={`mt-4 block overflow-hidden rounded-2xl border border-white/10 bg-slate-950/60 transition ${
+            canUpload ? "cursor-pointer hover:border-emerald-400/30" : ""
+          }`}
+        >
           <img
             src={resolvedPreviewUrl}
             alt={title}
             className="h-56 w-full object-cover"
           />
-        </div>
+        </label>
       ) : (
-        <div className="mt-4 flex h-56 items-center justify-center rounded-2xl border border-dashed border-white/10 bg-slate-950/40 text-sm text-slate-500">
+        <label
+          htmlFor={canUpload ? inputId : undefined}
+          className={`mt-4 flex h-56 items-center justify-center rounded-2xl border border-dashed border-white/10 bg-slate-950/40 text-sm text-slate-500 transition ${
+            canUpload ? "cursor-pointer hover:border-emerald-400/30 hover:text-slate-300" : ""
+          }`}
+        >
           No screenshot uploaded yet
-        </div>
+        </label>
       )}
 
       <div className="mt-4 flex flex-wrap gap-3">
         <label
+          htmlFor={canUpload ? inputId : undefined}
           className={`inline-flex cursor-pointer items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold transition ${
-            isPro && !disabled
+            canUpload
               ? "border border-emerald-400/20 bg-emerald-500/10 text-emerald-100 hover:bg-emerald-500/15"
               : "cursor-not-allowed border border-white/10 bg-white/[0.04] text-slate-500"
           }`}
         >
           <ImagePlus className="h-4 w-4" />
           {resolvedPreviewUrl ? "Replace Screenshot" : "Upload Screenshot"}
-          <input
-            type="file"
-            accept="image/png,image/jpeg,image/webp"
-            className="hidden"
-            disabled={!isPro || disabled}
-            onChange={onFileChange}
-          />
         </label>
 
         {resolvedPreviewUrl ? (

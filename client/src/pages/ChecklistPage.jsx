@@ -126,7 +126,7 @@ export default function ChecklistPage() {
           planningMetrics.rewardAmount !== null
             ? Number(planningMetrics.rewardAmount.toFixed(2))
             : undefined,
-        beforeTradeScreenshot,
+        beforeTradeScreenshot: beforeTradeScreenshot || undefined,
         confluenceScore: totalScore,
         setupQuality,
         checklistSnapshot: createChecklistSnapshot(sections),

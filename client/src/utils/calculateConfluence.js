@@ -4,8 +4,23 @@ export const calculateSectionScore = (section) =>
     0
   );
 
-export const calculateTotalScore = (sections) =>
-  sections.reduce((total, section) => total + calculateSectionScore(section), 0);
+export const calculateMaxScore = (sections) =>
+  sections.reduce(
+    (total, section) =>
+      total +
+      section.conditions.reduce((sectionTotal, condition) => sectionTotal + condition.weight, 0),
+    0,
+  );
+
+export const calculateTotalScore = (sections) => {
+  const maxScore = calculateMaxScore(sections);
+  if (!maxScore) {
+    return 0;
+  }
+
+  const rawScore = sections.reduce((total, section) => total + calculateSectionScore(section), 0);
+  return Math.round((rawScore / maxScore) * 100);
+};
 
 export const classifySetup = (score) => {
   if (score >= 85) {

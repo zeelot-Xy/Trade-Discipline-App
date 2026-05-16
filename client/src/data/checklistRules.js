@@ -62,8 +62,8 @@ export const strategyPresets = {
         id: "risk-management",
         title: "Stop Loss & Take Profit",
         conditions: [
-          { id: "stop-loss-confirmed", label: "Stop Loss Confirmed", weight: 0, required: true },
-          { id: "take-profit-confirmed", label: "Take Profit Confirmed", weight: 0, required: true },
+          { id: "stop-loss-confirmed", label: "Stop Loss Confirmed", weight: 5, required: true },
+          { id: "take-profit-confirmed", label: "Take Profit Confirmed", weight: 5, required: true },
         ],
       },
     ],
@@ -125,8 +125,8 @@ export const strategyPresets = {
         id: "risk-management",
         title: "Stop Loss & Take Profit",
         conditions: [
-          { id: "stop-loss-confirmed", label: "Stop Loss Confirmed", weight: 0, required: true },
-          { id: "take-profit-confirmed", label: "Take Profit Confirmed", weight: 0, required: true },
+          { id: "stop-loss-confirmed", label: "Stop Loss Confirmed", weight: 5, required: true },
+          { id: "take-profit-confirmed", label: "Take Profit Confirmed", weight: 5, required: true },
         ],
       },
     ],
@@ -188,8 +188,8 @@ export const strategyPresets = {
         id: "risk-management",
         title: "Stop Loss & Take Profit",
         conditions: [
-          { id: "stop-loss-confirmed", label: "Stop Loss Confirmed", weight: 0, required: true },
-          { id: "take-profit-confirmed", label: "Take Profit Confirmed", weight: 0, required: true },
+          { id: "stop-loss-confirmed", label: "Stop Loss Confirmed", weight: 5, required: true },
+          { id: "take-profit-confirmed", label: "Take Profit Confirmed", weight: 5, required: true },
         ],
       },
     ],

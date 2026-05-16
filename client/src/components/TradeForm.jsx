@@ -1,7 +1,7 @@
 import { Calculator, PencilLine } from "lucide-react";
 
 import popularPairs from "../data/popularPairs.json";
-import { emotionOptions, riskyEmotionSet } from "../data/tradingOptions.js";
+import { emotionBeforeOptions, riskyEmotionSet } from "../data/tradingOptions.js";
 import { formatNumber } from "../utils/formatters.js";
 import ScreenshotUploader from "./ScreenshotUploader.jsx";
 
@@ -139,7 +139,7 @@ export default function TradeForm({
           onChange={handleChange}
         >
           <option value="">Emotion Before Trade</option>
-          {emotionOptions.map((emotion) => (
+          {emotionBeforeOptions.map((emotion) => (
             <option key={emotion} value={emotion}>
               {emotion}
             </option>
