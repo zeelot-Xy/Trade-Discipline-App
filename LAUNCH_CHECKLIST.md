@@ -51,6 +51,8 @@ These are the main things still worth finishing before calling the product ready
 - [ ] Configure live Paystack webhook to `/api/billing/webhook`
 - [ ] Run one full end-to-end paid subscription test
 - [ ] Replace development-style password reset with real email delivery
+  - SMTP-based reset email sending is implemented in code
+  - remaining work is adding real SMTP credentials and verifying delivery end to end
 - [ ] Test imports with real files from multiple sources
 - [ ] Smoke-test the main user flows end to end:
   - landing page

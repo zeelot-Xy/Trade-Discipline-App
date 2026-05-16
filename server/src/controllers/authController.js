@@ -13,6 +13,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { clearAuthCookie, setAuthCookie, signToken } from "../utils/jwt.js";
 import { serializeUser } from "../utils/userSerializer.js";
 import { getUsageSummaryForUser } from "../services/usageService.js";
+import { sendPasswordResetEmail } from "../services/emailService.js";
 
 const buildAuthPayload = async (user) => ({
   user: serializeUser(user),
@@ -103,6 +104,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   });
 
   let resetUrl;
+  let deliveryMode = "email";
 
   if (user) {
     const rawToken = crypto.randomBytes(32).toString("hex");
@@ -118,14 +120,21 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     });
 
     resetUrl = `${process.env.CLIENT_URL || "http://localhost:5173"}/reset-password?token=${rawToken}`;
+    const emailResult = await sendPasswordResetEmail({
+      to: user.email,
+      fullName: user.fullName,
+      resetUrl,
+    });
+    deliveryMode = emailResult.deliveryMode;
   }
 
   res.json({
     success: true,
     data: {
       message:
-        "If an account with that email exists, a password reset link has been prepared.",
-      resetUrl,
+        "If an account with that email exists, a password reset link has been sent.",
+      resetUrl: deliveryMode === "development-fallback" ? resetUrl : undefined,
+      deliveryMode,
     },
   });
 });
