@@ -58,13 +58,17 @@ tradecadet/
 
 ```env
 DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/perfect_trade"
+DIRECT_URL="postgresql://USER:PASSWORD@localhost:5432/perfect_trade"
 JWT_SECRET="change_this_secret"
 JWT_EXPIRES_IN="7d"
 CLIENT_URL="http://localhost:5173"
+API_URL="http://localhost:5000/api"
+ALLOWED_ORIGINS="http://localhost:5173"
 PORT=5000
 NODE_ENV="development"
 PAYSTACK_SECRET_KEY="sk_test_xxxxx"
 PAYSTACK_PRO_PLAN_CODE="PLN_xxxxx"
+UPLOADS_DIR="./uploads"
 ```
 
 ### `client/.env`
@@ -121,6 +125,93 @@ npm run dev:client
 ```
 
 The frontend will start on `http://localhost:5173`.
+
+## Deployment Setup
+
+This app is prepared for:
+
+- Frontend: `Vercel`
+- Backend API: `Render`
+- Database: `Supabase Postgres`
+
+### Vercel frontend
+
+- Set the Vercel project root to `client/`
+- Add `VITE_API_URL`:
+
+```env
+VITE_API_URL="https://your-render-service.onrender.com/api"
+```
+
+- `client/vercel.json` is included so React Router routes rewrite to `index.html`
+
+### Render backend
+
+- Set the Render service root to `server/`
+- Build command:
+
+```bash
+npm install && npm run prisma:generate
+```
+
+- Start command:
+
+```bash
+npm start
+```
+
+- Health check path:
+
+```text
+/api/health
+```
+
+- Attach a persistent disk and point uploads to it:
+
+```env
+UPLOADS_DIR="/var/data/tradecadet-uploads"
+```
+
+- Set production URLs:
+
+```env
+CLIENT_URL="https://your-frontend-domain.vercel.app"
+API_URL="https://your-render-service.onrender.com/api"
+ALLOWED_ORIGINS="https://your-frontend-domain.vercel.app"
+```
+
+If you later use a custom domain and still want Vercel preview deployments to reach the API, add them to `ALLOWED_ORIGINS` as a comma-separated list. Wildcard entries such as `https://*.vercel.app` are also supported.
+
+### Supabase Postgres with Prisma
+
+- Use your Supabase pooled or app connection as `DATABASE_URL`
+- Use the direct connection string as `DIRECT_URL` for Prisma migrations
+
+Example:
+
+```env
+DATABASE_URL="postgresql://..."
+DIRECT_URL="postgresql://..."
+```
+
+- Generate Prisma locally:
+
+```bash
+npm run prisma:generate
+```
+
+- Apply production migrations:
+
+```bash
+cd server
+npm run prisma:deploy
+```
+
+### Important deployment notes
+
+- Password reset links are built from `CLIENT_URL`, so this must be your real frontend URL in production
+- Screenshot uploads are stored on the backend filesystem, so Render needs a persistent disk if you want screenshots to survive redeploys
+- Auth cookies use `secure=true` and `sameSite=none` in production, which is required for cross-site frontend/backend hosting
 
 ## API Endpoints
 
