@@ -14,6 +14,7 @@ import { clearAuthCookie, setAuthCookie, signToken } from "../utils/jwt.js";
 import { serializeUser } from "../utils/userSerializer.js";
 import { getUsageSummaryForUser } from "../services/usageService.js";
 import { sendPasswordResetEmail } from "../services/emailService.js";
+import { getClientUrl } from "../config/runtime.js";
 
 const buildAuthPayload = async (user) => ({
   user: serializeUser(user),
@@ -119,7 +120,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
       },
     });
 
-    resetUrl = `${process.env.CLIENT_URL || "http://localhost:5173"}/reset-password?token=${rawToken}`;
+    resetUrl = `${getClientUrl()}/reset-password?token=${rawToken}`;
     const emailResult = await sendPasswordResetEmail({
       to: user.email,
       fullName: user.fullName,

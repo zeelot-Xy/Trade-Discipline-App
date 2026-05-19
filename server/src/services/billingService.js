@@ -2,6 +2,7 @@ import crypto from "crypto";
 
 import { prisma } from "../prisma/prisma.js";
 import { AppError } from "../utils/AppError.js";
+import { getClientUrl } from "../config/runtime.js";
 
 const PAYSTACK_API_BASE_URL = "https://api.paystack.co";
 const DEFAULT_SUCCESS_REDIRECT = "/upgrade?checkout=success&provider=paystack";
@@ -32,8 +33,6 @@ const getPaystackPlanCode = () =>
     "PAYSTACK_PRO_PLAN_CODE",
     "Paystack billing is not configured yet. Add PAYSTACK_PRO_PLAN_CODE to continue.",
   );
-
-const getClientUrl = () => process.env.CLIENT_URL || "http://localhost:5173";
 
 const buildCallbackUrl = () => `${getClientUrl()}${DEFAULT_SUCCESS_REDIRECT}`;
 

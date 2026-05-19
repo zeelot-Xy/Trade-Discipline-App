@@ -3,8 +3,9 @@ import path from "path";
 import crypto from "crypto";
 
 import { AppError } from "../utils/AppError.js";
+import { getUploadsRoot } from "../config/runtime.js";
 
-const uploadsRoot = path.resolve("uploads");
+const uploadsRoot = getUploadsRoot();
 const supportedMimeTypes = new Map([
   ["image/png", "png"],
   ["image/jpeg", "jpg"],
